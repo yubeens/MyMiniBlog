@@ -3,6 +3,7 @@ package org.jyb.backend.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.jyb.backend.entity.Post;
+import org.jyb.backend.entity.User;
 import org.jyb.backend.repository.PostRepository;
 import org.springframework.stereotype.Service;
 
@@ -33,10 +34,32 @@ public class PostService {
         return postRepository.findById(id).orElse(null);
     }
 
+    // 글 수정
+    @Transactional
+    public Post update(Long id, Post updatePost, String username) {
+        Post post = postRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+        if (!post.getUser().getUsername().equals(username)) {
+            throw new RuntimeException("작성자만 수정할 수 있습니다.");
+        }
+
+        post.setTitle(updatePost.getTitle());
+        post.setContent(updatePost.getContent());
+        // 저장 후 반환
+        return postRepository.save(post);
+    }
+
     // 글 삭제
     @Transactional // 있으면 지우고 없으면 rollback
-    public void deleteById(long id) {
-        postRepository.deleteById(id);
+    public void deleteById(long id, User user) {
+        Post post = postRepository.findById(id)
+                        .orElseThrow(() -> new RuntimeException("게시글이 존재하지 않습니다."));
+
+        if (!post.getUser().getId().equals(user.getId())) {
+            throw new RuntimeException("권한 없음");
+        }
+        postRepository.delete(post);
     }
 
     // 특정 유저의 글 목록 (Entity User 기준임 user_id => jpa가 자동으로 userId로 매핑 (단 이름은 같아야 함))

@@ -34,6 +34,9 @@
 ### 할일 목록 조회
 - GET /api/todos
 
+### 특정 유저의 할일 조회
+- GET /api/todos/{id}
+
 ### 할일 추가
 - POST /api/todos
 
